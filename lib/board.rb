@@ -127,7 +127,6 @@ class Board
     grid.each do |row|
       row.each do |piece|
         if piece.color == color
-          # debugger if currently_in_check?(color)
           return false if piece.available_moves.any? do |move|
             !will_be_in_check?((piece.pos), move, color)
           end
