@@ -1,4 +1,4 @@
 # Chess
 
 
-![alt tag]('./images/game.png')
+![alt tag](screenshots/game.png)
