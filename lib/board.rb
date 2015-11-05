@@ -1,7 +1,6 @@
-load './pieces.rb'
-#load 'colorize'
-#require 'cursorable'
-require 'byebug'
+require './pieces'
+require './cursorable'
+require 'colorize'
 
 class Board
     attr_accessor :grid, :current_player
@@ -32,48 +31,24 @@ class Board
   end
 
   def populate_board
-    populate_pawns
-    populate_bishops
-    populate_knights
-    populate_rooks
-    populate_queens
-    populate_kings
-  end
-
-  def populate_pawns
     (0...8).each do |cell|
       self[[1, cell]] = Pawn.new(:black, [1, cell], self)
       self[[6, cell]] = Pawn.new(:white, [6, cell], self)
     end
-  end
-
-  def populate_bishops
     self[[0, 2]] = Bishop.new(:black, [0, 2], self)
     self[[0, 5]] = Bishop.new(:black, [0, 5], self)
     self[[7, 2]] = Bishop.new(:white, [7, 2], self)
     self[[7, 5]] = Bishop.new(:white, [7, 5], self)
-  end
-
-  def populate_knights
     self[[0, 1]] = Knight.new(:black, [0, 1], self)
     self[[0, 6]] = Knight.new(:black, [0, 6], self)
     self[[7, 1]] = Knight.new(:white, [7, 1], self)
     self[[7, 6]] = Knight.new(:white, [7, 6], self)
-  end
-
-  def populate_rooks
     self[[0, 0]] = Rook.new(:black, [0, 0], self)
     self[[0, 7]] = Rook.new(:black, [0, 7], self)
     self[[7, 0]] = Rook.new(:white, [7, 0], self)
     self[[7, 7]] = Rook.new(:white, [7, 7], self)
-  end
-
-  def populate_queens
     self[[0, 4]] = Queen.new(:black, [0, 4], self)
     self[[7, 4]] = Queen.new(:white, [7, 4], self)
-  end
-
-  def populate_kings
     self[[0, 3]] = King.new(:black, [0, 3], self)
     self[[7, 3]] = King.new(:white, [7, 3], self)
   end

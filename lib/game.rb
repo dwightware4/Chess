@@ -1,7 +1,7 @@
-require_relative 'board.rb'
-require_relative 'display.rb'
-require_relative 'cursorable.rb'
-require_relative 'pieces.rb'
+require './board'
+require './display'
+require './cursorable'
+require './pieces'
 require 'byebug'
 
 class Game
@@ -12,47 +12,60 @@ class Game
   end
 
   def play
-    play_turn while true
+    until game_over?
+      play_turn
+    end
   end
 
   private
   attr_reader :display, :board
 
-    def play_turn
+  def game_over?
+    if board.checkmate?(board.current_player)
+      Kernel.abort("#{board.current_player.capitalize} Wins!")
+    end
+    false
+  end
+
+  def play_turn
+    display.render
+    piece = select_piece
+    destination = select_destination(piece)
+    piece.selected = false
+    board.make_move(piece.pos, destination)
+    board.swap_players
+  end
+
+  def select_piece
+    pos = get_pos
+    pos = get_pos until board[pos].color == board.current_player
+    toggle_selected(pos)
+    select_piece unless board[pos].selected
+    board[pos]
+  end
+
+  def select_destination(piece)
+    pos = get_pos
+    pos = get_pos until pos == piece.pos || piece.available_moves.include?(pos)
+    if piece.pos == pos
+      toggle_selected(pos)
+      play_turn
+    end
+    pos
+  end
+
+  def toggle_selected(pos)
+    board[pos].selected ? board[pos].selected = false : board[pos].selected = true
+  end
+
+  def get_pos
+    result = nil
+    until result
       display.render
-
-      opponent = board.current_player == :black ? :white : :black
-      if board.checkmate?(board.current_player)
-        Kernel.abort("#{board.current_player} Wins!")
-      end
-      # gets and validates starting position
-      start_position = nil
-      until start_position && board.occupied?(start_position) && !board[start_position].available_moves.empty?
-        start_position = get_move
-      end
-
-      board[start_position].selected = true
-
-      # bug exists due to inability to deselect pieces or retry when move fails
-      # gets and validates destination position
-      destination = nil
-      until destination && board[start_position].available_moves.include?(destination) && !@board.will_be_in_check?(start_position, destination, @board.current_player)
-        destination = get_move
-      end
-
-      board[start_position].selected = false
-      board.make_move(start_position, destination)
-      board.swap_players
+      result = display.get_input
     end
-
-    def get_move
-      result = nil
-      until result
-        display.render
-        result = display.get_input
-      end
-      result
-    end
+    result
+  end
 end
 
 class UnoccupiedError < StandardError

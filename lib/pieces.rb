@@ -1,4 +1,4 @@
-require_relative './slidable.rb'
+require './slidable'
 
 class Pieces
   attr_reader :face, :color, :available_moves, :board

@@ -1,9 +1,8 @@
+require './cursorable'
 require 'colorize'
-load 'cursorable.rb'
 
 class Display
   include Cursorable
-  attr_reader :cursor_pos
 
   def initialize(board)
     @board, @cursor_pos = board, [0, 0]
@@ -11,17 +10,16 @@ class Display
 
   def render
     system("clear")
-    puts "#{board.current_player.capitalize} Team's Turn!'"
-    puts "#{board.current_player} is in check" if board.currently_in_check?(@board.current_player)
     puts "Arrow keys to move, Space to select"
+    puts "#{board.current_player.capitalize} Team's Turn!"
+    puts "#{board.current_player.capitalize} is in check" if board.currently_in_check?(@board.current_player)
     build_grid.each do |row|
-
       puts row.join
     end
   end
 
   private
-  attr_reader :board
+  attr_reader :cursor_pos, :board
 
   def build_grid
     board.rows.map.with_index do |row, i|
