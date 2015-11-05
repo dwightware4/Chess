@@ -13,5 +13,4 @@ This screenshot shows the visual appeal of the game and demonstrates the availab
 # To-Do's
 
 - [ ] Refactor
-- [ ] Allow for deselecting pieces
-- [ ] Enforce current player move restrictions
+- [ ] Fix checkmate method
