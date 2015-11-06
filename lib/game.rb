@@ -5,12 +5,7 @@ require './pieces'
 require 'byebug'
 
 class Game
-
-  def initialize
-    @board = Board.new(true)
-    @display = Display.new(board)
-  end
-
+  
   def play
     until game_over?
       play_turn
@@ -20,8 +15,13 @@ class Game
   private
   attr_reader :display, :board
 
+  def initialize
+    @board = Board.new(true)
+    @display = Display.new(board)
+  end
+
   def game_over?
-    if board.checkmate?(board.current_player)
+    if board.checkmate?
       Kernel.abort("#{board.current_player.capitalize} Wins!")
     end
     false
@@ -38,10 +38,19 @@ class Game
 
   def select_piece
     pos = get_pos
-    pos = get_pos until board[pos].color == board.current_player
+    pos = get_pos until board[pos].team == board.current_player
     toggle_selected(pos)
     select_piece unless board[pos].selected
     board[pos]
+  end
+
+  def get_pos
+    result = nil
+    until result
+      display.render
+      result = display.get_input
+    end
+    result
   end
 
   def select_destination(piece)
@@ -56,15 +65,6 @@ class Game
 
   def toggle_selected(pos)
     board[pos].selected ? board[pos].selected = false : board[pos].selected = true
-  end
-
-  def get_pos
-    result = nil
-    until result
-      display.render
-      result = display.get_input
-    end
-    result
   end
 end
 

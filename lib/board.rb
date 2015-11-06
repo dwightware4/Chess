@@ -3,31 +3,88 @@ require './cursorable'
 require 'colorize'
 
 class Board
-    attr_accessor :grid, :current_player
+  attr_reader :grid, :current_player
 
-  def initialize(trigger = false)
-    @grid = Array.new(8) { Array.new(8) { EmptySquare.new(:gray, nil, self) } }
-    @current_player = :black
-    setup(trigger)
-  end
-
-  def setup(trigger)
-    if trigger
-      populate_board
-      initialize_moves
-    end
-  end
-
-  def initialize_moves
+  def checkmate?
+    return false
     grid.each do |row|
       row.each do |piece|
-        piece.get_moves
+        if piece.team== current_player
+          return false if piece.available_moves.any? do |move|
+            !will_be_in_check?((piece.pos), move, current_player)
+          end
+        end
+      end
+    end
+    true
+  end
+
+  def currently_in_check?
+    king_location = find_king
+    grid.each do |row|
+      row.each do |piece|
+        return true if piece.team == opponent && piece.available_moves.include?(king_location)
+      end
+    end
+    false
+  end
+
+  def generate_available_moves_catalog
+    grid.each do |row|
+      row.each do |piece|
+        piece.available_moves
       end
     end
   end
 
+  def make_move(start_position, destination)
+    self[destination] = self[start_position]
+    self[destination].pos = destination
+    self[start_position] = EmptySquare.new(:gray, start_position, self)
+    generate_available_moves_catalog
+  end
+
+  def [](pos)
+    x, y = pos
+    grid[x][y]
+  end
+
+  def []=(pos, value)
+    x, y = pos
+    grid[x][y] = value
+  end
+
+  def rows
+    @grid
+  end
+
+  def occupied?(pos)
+    !self[pos].is_a?(EmptySquare)
+  end
+
+  def on_board?(pos)
+    pos.all? { |pos| pos >= 0 && pos < 8 }
+  end
+
   def swap_players
     @current_player == :white ? @current_player = :black : @current_player = :white
+  end
+
+  private
+  attr_reader :opponent
+
+  def initialize(generate_new_pieces = false)
+    @grid = Array.new(8) { Array.new(8) { EmptySquare.new(:gray, nil, self) } }
+    @current_player, @opponent = :black, :white
+    generate_new_pieces ? setup : dont_setup
+  end
+
+  def setup
+      populate_board
+      generate_available_moves_catalog
+  end
+
+  def dont_setup
   end
 
   def populate_board
@@ -53,92 +110,12 @@ class Board
     self[[7, 3]] = King.new(:white, [7, 3], self)
   end
 
-  def on_board?(pos)
-    pos.all? { |pos| pos >= 0 && pos < 8 }
-  end
-
-  def occupied?(pos)
-    !self[pos].is_a?(EmptySquare)
-  end
-
-  def [](pos)
-    x, y = pos
-    grid[x][y]
-  end
-
-  def []=(pos, value)
-    x, y = pos
-    grid[x][y] = value
-  end
-
-  def rows
-    @grid
-  end
-
-  def will_be_in_check?(start_pos, destination, color)
-    dupped_board = dup_board
-    dupped_board.make_move(start_pos, destination)
-    dupped_board.initialize_moves
-    king_location = find_king(color)
-    dupped_board.grid.each do |row|
-      row.each do |piece|
-        return true if piece.color != color && piece.available_moves.include?(king_location)
-      end
-    end
-    false
-  end
-
-  def currently_in_check?(color)
-    king_location = find_king(color)
+  def find_king
     grid.each do |row|
       row.each do |piece|
-        return true if piece.color != color && piece.available_moves.include?(king_location)
+        return piece.pos if piece.is_a?(King) && piece.team == current_player
       end
     end
-    false
-  end
-
-  def checkmate?(color)
-    grid.each do |row|
-      row.each do |piece|
-        if piece.color == color
-          return false if piece.available_moves.any? do |move|
-            !will_be_in_check?((piece.pos), move, color)
-          end
-        end
-      end
-    end
-    true
-  end
-
-  def find_king(color)
-    grid.each do |row|
-      row.each do |piece|
-        return piece.pos if piece.is_a?(King) && piece.color == color
-      end
-    end
-  end
-
-  def make_move(start_position, destination)
-    self[destination] = self[start_position]
-    self[destination].pos = destination
-    self[start_position] = EmptySquare.new(:gray, start_position, self)
-    initialize_moves
-  end
-
-  def pieces(board)
-    pieces = []
-
-    grid.each do |row|
-      row.each do |piece|
-        unless piece.is_a?(EmptySquare)
-          dup_piece = piece.class.new(piece.color, piece.pos, board)
-          pieces << dup_piece
-        end
-      end
-    end
-
-    pieces
   end
 
   def dup_board
@@ -148,5 +125,33 @@ class Board
       dup_board[piece.pos] = piece
     end
     dup_board
+  end
+
+  def pieces(board)
+    pieces = []
+
+    grid.each do |row|
+      row.each do |piece|
+        unless piece.is_a?(EmptySquare)
+          dup_piece = piece.class.new(piece.team, piece.pos, board)
+          pieces << dup_piece
+        end
+      end
+    end
+
+    pieces
+  end
+
+  def will_be_in_check?(start_pos, destination, team)
+    dupped_board = dup_board
+    dupped_board.make_move(start_pos, destination)
+    dupped_board.generate_available_moves_catalog
+    king_location = find_king
+    dupped_board.grid.each do |row|
+      row.each do |piece|
+        return true if piece.team != team && piece.available_moves.include?(king_location)
+      end
+    end
+    false
   end
 end

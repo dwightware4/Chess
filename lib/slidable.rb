@@ -1,8 +1,5 @@
 module Slidable
-
-  def occupied?(pos)
-    board[pos].class != EmptySquare
-  end
+  private
 
   def all_horizontal_moves
     result = []
@@ -19,9 +16,9 @@ module Slidable
     result = []
 
     range.each do |h|
-      if @board[[v, h]].color == color
+      if board[[v, h]].team == team
         break
-      elsif @board.occupied?([v, h])
+      elsif board.occupied?([v, h])
         result << [v, h]
         break
       else
@@ -47,9 +44,9 @@ module Slidable
     result = []
 
     range.each do |v|
-      if @board[[v, h]].color == color
+      if board[[v, h]].team== team
         break
-      elsif @board.occupied?([v, h])
+      elsif board.occupied?([v, h])
         result << [v, h]
         break
       else
@@ -75,10 +72,10 @@ module Slidable
 
     v = pos[0] + range[0]
     h = pos[1] + range[1]
-    while @board.on_board?([v, h])
-      if @board[[v, h]].color == color
+    while board.on_board?([v, h])
+      if board[[v, h]].team== team
         break
-      elsif @board.occupied?([v, h])
+      elsif board.occupied?([v, h])
         result << [v, h]
         break
       else

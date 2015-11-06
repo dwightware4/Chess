@@ -1,6 +1,13 @@
 require "io/console"
 
 module Cursorable
+
+  def get_input
+    key = KEYMAP[read_char]
+    handle_key(key)
+  end
+
+  private
   KEYMAP = {
     " " => :space,
     "\e[A" => :up,
@@ -17,11 +24,6 @@ module Cursorable
     down: [1, 0]
   }
 
-  def get_input
-    key = KEYMAP[read_char]
-    handle_key(key)
-  end
-
   def handle_key(key)
     case key
     when :ctrl_c
@@ -30,9 +32,7 @@ module Cursorable
       @cursor_pos
     when :left, :right, :up, :down
       update_pos(MOVES[key])
-      nil
-    else
-      nil
+      return
     end
   end
 
@@ -57,27 +57,3 @@ module Cursorable
     @cursor_pos = new_pos if @board.on_board?(new_pos)
   end
 end
-
-
-# KEYMAP = {
-#   " " => :space,
-#   "h" => :left,
-#   "j" => :down,
-#   "k" => :up,
-#   "l" => :right,
-#   "w" => :left,
-#   "a" => :down,
-#   "s" => :up,
-#   "d" => :right,
-#   "\t" => :tab,
-#   "\r" => :return,
-#   "\n" => :newline,
-#   "\e" => :escape,
-#   "\e[A" => :up,
-#   "\e[B" => :down,
-#   "\e[C" => :right,
-#   "\e[D" => :left,
-#   "\177" => :backspace,
-#   "\004" => :delete,
-#   "\u0003" => :ctrl_c,
-# }
