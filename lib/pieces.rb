@@ -11,21 +11,23 @@ class Pieces
 end
 
 class EmptySquare < Pieces
+
+  def available_moves
+    available_moves = []
+  end
+
+  private
+
   def initialize(color, pos, board)
     super(color, pos, board)
     team == :black ? @face = "   " : @face = "   "
-  end
-
-  def available_moves
-    @available_moves = []
   end
 end
 
 class Pawn < Pieces
 
-
   def available_moves
-    @available_moves = all_pawn_moves
+    available_moves = all_pawn_moves
   end
 
   def all_pawn_moves
@@ -35,23 +37,25 @@ class Pawn < Pieces
       v = pos[0]
       h = pos[1]
       result << [v + 1, h] if board.on_board?([v + 1, h]) && board.occupied?([v + 1, h]) == false
-      result << [v + 1, h - 1] if board.on_board?([v + 1, h - 1]) && board[[(v + 1), (h - 1)]].team == @opponent_team
-      result << [v + 1, h + 1] if board.on_board?([v + 1, h + 1]) && board[[(v + 1), (h + 1)]].team == @opponent_team
-      result << [v + 2, h] if pos == @origin && board[[(v + 2), h]].team != team
+      result << [v + 1, h - 1] if board.on_board?([v + 1, h - 1]) && board[[(v + 1), (h - 1)]].team == opponent_team
+      result << [v + 1, h + 1] if board.on_board?([v + 1, h + 1]) && board[[(v + 1), (h + 1)]].team == opponent_team
+      result << [v + 2, h] if pos == origin && board[[(v + 2), h]].team != team
     end
 
     if team == :white
       v = pos[0]
       h = pos[1]
       result << [v - 1, h] if board.on_board?([v - 1, h]) && board.occupied?([v - 1, h]) == false
-      result << [v - 1, h - 1] if board.on_board?([v - 1, h - 1]) && board[[(v - 1), (h - 1)]].team == @opponent_team
-      result << [v - 1, h + 1] if board.on_board?([v - 1, h + 1]) && board[[(v - 1), (h + 1)]].team == @opponent_team
-      result << [v - 2, h] if pos == @origin && board[[(v - 2), h]].team!= team
+      result << [v - 1, h - 1] if board.on_board?([v - 1, h - 1]) && board[[(v - 1), (h - 1)]].team == opponent_team
+      result << [v - 1, h + 1] if board.on_board?([v - 1, h + 1]) && board[[(v - 1), (h + 1)]].team == opponent_team
+      result << [v - 2, h] if pos == origin && board[[(v - 2), h]].team!= team
     end
 
     result
   end
+
   private
+  attr_reader :origin, :opponent_team
 
   def initialize(color, pos, board)
     super(color, pos, board)
@@ -63,24 +67,23 @@ end
 
 class Bishop < Pieces
   include Slidable
+
+  def available_moves
+    available_moves = all_diagonal_moves
+  end
+
+  private
+
   def initialize(color, pos, board)
     super(color, pos, board)
     team == :black ? @face = " ♝ " : @face = " ♗ "
   end
-
-  def available_moves
-    @available_moves = all_diagonal_moves
-  end
 end
 
 class Knight < Pieces
-  def initialize(color, pos, board)
-    super(color, pos, board)
-    team == :black ? @face = " ♞ " : @face = " ♘ "
-  end
 
   def available_moves
-    @available_moves = all_knight_moves
+    available_moves = all_knight_moves
   end
 
   def all_knight_moves
@@ -102,43 +105,51 @@ class Knight < Pieces
     result
   end
 
+  private
+
+  def initialize(color, pos, board)
+    super(color, pos, board)
+    team == :black ? @face = " ♞ " : @face = " ♘ "
+  end
 end
 
 class Rook < Pieces
   include Slidable
+
+  def available_moves
+    available_moves = all_horizontal_moves
+    available_moves += all_vertical_moves
+  end
+
+  private
+
   def initialize(color, pos, board)
     super(color, pos, board)
     team == :black ? @face = " ♜ " : @face = " ♖ "
-  end
-
-  def available_moves
-    @available_moves = all_horizontal_moves
-    @available_moves += all_vertical_moves
   end
 end
 
 class Queen < Pieces
   include Slidable
+
+  def available_moves
+    available_moves = all_horizontal_moves
+    available_moves += all_vertical_moves
+    available_moves += all_diagonal_moves
+  end
+
+  private
+
   def initialize(color, pos, board)
     super(color, pos, board)
     team == :black ? @face = " ♛ " : @face = " ♕ "
   end
-
-  def available_moves
-    @available_moves = all_horizontal_moves
-    @available_moves += all_vertical_moves
-    @available_moves += all_diagonal_moves
-  end
 end
 
 class King < Pieces
-  def initialize(color, pos, board)
-    super(color, pos, board)
-    team == :black ? @face = " ♚ " : @face = " ♔ "
-  end
 
   def available_moves
-    @available_moves = all_king_moves
+    available_moves = all_king_moves
   end
 
   def all_king_moves
@@ -158,5 +169,12 @@ class King < Pieces
     end
 
     result
+  end
+
+  private
+
+  def initialize(color, pos, board)
+    super(color, pos, board)
+    team == :black ? @face = " ♚ " : @face = " ♔ "
   end
 end

@@ -5,7 +5,7 @@ require './pieces'
 require 'byebug'
 
 class Game
-  
+
   def play
     until game_over?
       play_turn
@@ -22,7 +22,7 @@ class Game
 
   def game_over?
     if board.checkmate?
-      Kernel.abort("#{board.current_player.capitalize} Wins!")
+      Kernel.abort("#{board.current_player_team.capitalize} Wins!")
     end
     false
   end
@@ -38,7 +38,7 @@ class Game
 
   def select_piece
     pos = get_pos
-    pos = get_pos until board[pos].team == board.current_player
+    pos = get_pos until board[pos].team == board.current_player_team
     toggle_selected(pos)
     select_piece unless board[pos].selected
     board[pos]
@@ -55,7 +55,8 @@ class Game
 
   def select_destination(piece)
     pos = get_pos
-    pos = get_pos until pos == piece.pos || piece.available_moves.include?(pos)
+    pos = get_pos until pos == piece.pos ||
+    (piece.available_moves.include?(pos) && !board.will_be_in_check?(piece.pos, pos))
     if piece.pos == pos
       toggle_selected(pos)
       play_turn

@@ -8,6 +8,7 @@ module Cursorable
   end
 
   private
+  
   KEYMAP = {
     " " => :space,
     "\e[A" => :up,

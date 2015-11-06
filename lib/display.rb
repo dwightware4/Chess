@@ -10,8 +10,8 @@ class Display
       puts row.join
     end
     puts "Arrow keys to move, Space to select"
-    puts "#{board.current_player.capitalize} team's Turn!"
-    puts "#{board.current_player.capitalize} is in check" if board.currently_in_check?
+    puts "#{board.current_player_team.capitalize} team's Turn!"
+    puts "#{board.current_player_team.capitalize} is in check" if board.currently_in_check?
   end
 
   private
@@ -35,7 +35,7 @@ class Display
   end
 
   def colors_for(i, j)
-    if board[cursor_pos].available_moves.include?([i, j]) && board.current_player == board[cursor_pos].team
+    if board[cursor_pos].available_moves.include?([i, j]) && board.current_player_team == board[cursor_pos].team
       bg = :light_blue
     elsif [i, j] == cursor_pos
       bg = :green

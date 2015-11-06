@@ -3,15 +3,16 @@ require './cursorable'
 require 'colorize'
 
 class Board
-  attr_reader :grid, :current_player
+  attr_reader :grid, :opponent
+  attr_accessor :current_player_team
 
   def checkmate?
     return false
     grid.each do |row|
       row.each do |piece|
-        if piece.team== current_player
+        if piece.team== current_player_team
           return false if piece.available_moves.any? do |move|
-            !will_be_in_check?((piece.pos), move, current_player)
+            !will_be_in_check?((piece.pos), move, current_player_team)
           end
         end
       end
@@ -24,6 +25,19 @@ class Board
     grid.each do |row|
       row.each do |piece|
         return true if piece.team == opponent && piece.available_moves.include?(king_location)
+      end
+    end
+    false
+  end
+
+  def will_be_in_check?(start_pos, destination)
+    dupped_board = dup_board
+    dupped_board.make_move(start_pos, destination)
+    king_location = find_dupped_king(dupped_board)
+    dupped_board.grid.each do |row|
+      row.each do |piece|
+        return true if piece.team == dupped_board.current_player_team &&
+          piece.available_moves.include?(king_location)
       end
     end
     false
@@ -55,7 +69,7 @@ class Board
   end
 
   def rows
-    @grid
+    grid
   end
 
   def occupied?(pos)
@@ -67,15 +81,20 @@ class Board
   end
 
   def swap_players
-    @current_player == :white ? @current_player = :black : @current_player = :white
+    if @current_player_team == :white
+      @current_player_team = :black
+      @opponent = :white
+    else
+      @current_player_team = :white
+      @opponent = :black
+    end
   end
 
   private
-  attr_reader :opponent
 
   def initialize(generate_new_pieces = false)
     @grid = Array.new(8) { Array.new(8) { EmptySquare.new(:gray, nil, self) } }
-    @current_player, @opponent = :black, :white
+    @current_player_team, @opponent = :black, :white
     generate_new_pieces ? setup : dont_setup
   end
 
@@ -113,18 +132,27 @@ class Board
   def find_king
     grid.each do |row|
       row.each do |piece|
-        return piece.pos if piece.is_a?(King) && piece.team == current_player
+        return piece.pos if piece.is_a?(King) && piece.team == current_player_team
+      end
+    end
+  end
+
+  def find_dupped_king(dupped_board)
+    dupped_board.grid.each do |row|
+      row.each do |piece|
+        return piece.pos if piece.is_a?(King) && piece.team == opponent
       end
     end
   end
 
   def dup_board
-    dup_board = Board.new
-    dup_pieces = pieces(dup_board)
-    dup_pieces.each do |piece|
-      dup_board[piece.pos] = piece
+    dupped_board = Board.new
+    dupped_pieces = pieces(dupped_board)
+    dupped_pieces.each do |piece|
+      dupped_board[piece.pos] = piece
     end
-    dup_board
+    dupped_board.generate_available_moves_catalog
+    dupped_board
   end
 
   def pieces(board)
@@ -140,18 +168,5 @@ class Board
     end
 
     pieces
-  end
-
-  def will_be_in_check?(start_pos, destination, team)
-    dupped_board = dup_board
-    dupped_board.make_move(start_pos, destination)
-    dupped_board.generate_available_moves_catalog
-    king_location = find_king
-    dupped_board.grid.each do |row|
-      row.each do |piece|
-        return true if piece.team != team && piece.available_moves.include?(king_location)
-      end
-    end
-    false
   end
 end
